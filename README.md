@@ -1,5 +1,8 @@
 # 7 尺實木電視櫃 (212 cm / 7.0 台尺) — 3D 結構剖面與互動報價單
 
+🌐 **線上 3D 互動展示網址 (Cloudflare)**：**[https://tv-cabinet-7ft-3d.tw365ai.workers.dev](https://tv-cabinet-7ft-3d.tw365ai.workers.dev)**  
+📦 **GitHub 專案儲存庫**：**[https://github.com/tw365-org/tv-cabinet-7ft-3d](https://github.com/tw365-org/tv-cabinet-7ft-3d)**
+
 專為木工師傅與室內裝潢業主打造的 **7 尺實木電視櫃 3D 互動報價展示頁**，基於純 TypeScript `Three.js` + `GSAP` 輕量引擎打造，零後端依賴，可直接透過 **GitHub** 自動部署至 **Cloudflare Pages / Workers**。
 
 ## ✨ 專案特色（符合台灣木工產業規範）
