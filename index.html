@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>7 尺實木電視櫃 (212cm / 7.0台尺) — 3D 結構剖面與互動報價單</title>
+    <meta
+      name="description"
+      content="7 尺 (212 cm / 7.0 台尺) 北美黑胡桃木 × 白橡木格柵實木電視櫃 3D 互動報價單，支援 X/Y/Z 三軸無段剖面透視、Blum 五金標註與台尺換算。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 頂部導覽與 3 款 7 尺電視櫃方案切換列 -->
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-badge">7 尺電視櫃專案 (212cm)</span>
+          <h1>實木電視櫃 3D 結構剖面與互動報價單</h1>
+        </div>
+
+        <nav id="preset-tabs" class="preset-tabs" aria-label="7 尺電視櫃方案切換"></nav>
+
+        <div class="top-actions">
+          <label class="btn-action primary" for="glb-input" title="將 SketchUp / Rhino / AutoCAD 匯出的 .glb 拖入或點此上傳">
+            <span>📂 載入 .GLB 模型</span>
+            <input id="glb-input" type="file" accept=".glb,.gltf" hidden />
+          </label>
+          <button id="btn-export-json" type="button" class="btn-action" title="匯出目前標註設定 JSON 給客戶或備份">
+            <span>💾 匯出標註 JSON</span>
+          </button>
+          <label class="btn-action" for="json-input" title="載入先前儲存的標註設定 JSON">
+            <span>📥 載入 JSON</span>
+            <input id="json-input" type="file" accept=".json" hidden />
+          </label>
+        </div>
+      </header>
+
+      <!-- 主體三欄式木工報價工作台 -->
+      <main class="workspace">
+        <!-- 左欄：7 尺電視櫃雙軌尺寸 (cm + 台尺)、板材厚度與 3D 標註清單 -->
+        <aside class="panel panel-left">
+          <div class="project-header">
+            <div class="project-meta">
+              <span id="proj-category" class="pill"></span>
+              <span id="proj-price" class="price-tag"></span>
+            </div>
+            <h2 id="proj-name"></h2>
+            <p id="proj-subtitle" class="subtitle"></p>
+            <p id="proj-desc" class="desc"></p>
+          </div>
+
+          <!-- 尺寸規格（雙軌同時列出 公分 cm 與 台灣台尺 1台尺=30.303cm） -->
+          <div class="spec-box">
+            <div class="spec-row">
+              <span>外觀尺寸 (公分 cm)</span>
+              <strong id="spec-cm"></strong>
+            </div>
+            <div class="spec-row highlight">
+              <span>台灣台尺雙軌換算</span>
+              <strong id="spec-taichi"></strong>
+            </div>
+            <div class="spec-row">
+              <span>主體板材 / 足厚規格</span>
+              <strong id="spec-timber"></strong>
+            </div>
+            <div class="spec-row">
+              <span>表面塗裝工藝</span>
+              <strong id="spec-finish"></strong>
+            </div>
+          </div>
+
+          <!-- 5 大木工標註分類篩選與清單 -->
+          <div class="hotspot-section">
+            <div class="section-header">
+              <span>3D 工藝、板材與五金標註點</span>
+              <small id="hotspot-count"></small>
+            </div>
+            <div id="category-filters" class="category-filters"></div>
+            <ul id="hotspot-list" class="hotspot-list"></ul>
+          </div>
+        </aside>
+
+        <!-- 中央：3D 電視櫃檢視舞台、X/Y/Z 剖面滑桿、點擊表面新增標註彈窗 -->
+        <section id="stage-dropzone" class="stage-wrap">
+          <div id="stage" class="stage">
+            <!-- 拖放檔案提示遮罩 -->
+            <div id="drop-overlay" class="drop-overlay" hidden>
+              <div class="drop-box">
+                <span class="drop-icon">🪵</span>
+                <strong>放開滑鼠即可載入 3D 電視櫃模型 (.glb)</strong>
+                <p>自動置中並正規化比例，完整支援 DoubleSide 雙面剖面與表面點選標註</p>
+              </div>
+            </div>
+
+            <!-- 載入進度 -->
+            <div id="loading-overlay" class="loading-overlay" hidden>
+              <div class="spinner"></div>
+              <span id="loading-text">載入 7 尺實木電視櫃 3D 模型中...</span>
+            </div>
+
+            <!-- 新增標註模式頂部提示橫幅 -->
+            <div id="author-banner" class="author-banner" hidden>
+              <div>
+                <span class="author-badge">➕ 點選模型新增標註 (Authoring Mode)</span>
+                <span>請直接用滑鼠點擊 3D 電視櫃上的「格柵門、抽屜、五金或出線孔」即可新增標記！</span>
+              </div>
+              <button id="author-cancel" type="button" class="btn-sm">完成退出</button>
+            </div>
+
+            <!-- 跟隨 3D 圓點的浮動工藝說明卡 (Callout) -->
+            <div id="callout" class="callout" hidden>
+              <div class="callout-card">
+                <div class="callout-top">
+                  <span id="callout-badge" class="callout-badge"></span>
+                  <button id="callout-close" type="button" aria-label="關閉">×</button>
+                </div>
+                <strong id="callout-title" class="callout-title"></strong>
+                <div id="callout-spec" class="callout-spec"></div>
+                <p id="callout-detail" class="callout-detail"></p>
+                <div class="callout-footer">
+                  <span id="callout-price" class="callout-price"></span>
+                  <button id="callout-delete" type="button" class="btn-delete-spot">刪除此標註</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 點擊 3D 表面後彈出的「新增木工標註」免寫程式表單 -->
+            <div id="add-modal" class="modal-backdrop" hidden>
+              <form id="add-form" class="modal-card">
+                <div class="modal-header">
+                  <h3>➕ 新增 3D 木工標註點</h3>
+                  <span id="modal-coords" class="coords-tag"></span>
+                </div>
+
+                <label class="field">
+                  <span>標註分類</span>
+                  <select id="input-category" required>
+                    <option value="timber">🪵 木材 / 板材 (6分板 18mm、5分板 15mm、實木樹種)</option>
+                    <option value="hardware">🔩 五金配件 (Blum 鉸鏈、緩衝滑軌、毛刷出線孔)</option>
+                    <option value="joinery">🧩 榫卯 / 結構 (半隱燕尾榫、橫柵透氣門、法式斜劈)</option>
+                    <option value="finish">🖌️ 塗裝 / 貼皮 (Osmo 木蠟油、優麗旦開放漆)</option>
+                    <option value="dimension">📏 尺寸 / 報價備註 (掃地機淨高、Soundbar 內寬)</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>部位或五金名稱 *</span>
+                  <input id="input-label" type="text" placeholder="例如：PS5 專用散熱格 / 6分板 (18mm) 中立板" required />
+                </label>
+
+                <label class="field">
+                  <span>規格型號 / 尺寸厚度 (建議標註 cm + 台尺 / 分板) *</span>
+                  <input id="input-spec" type="text" placeholder="例如：內寬 52 cm (1.72 台尺)｜6分板 (18mm)" required />
+                </label>
+
+                <label class="field">
+                  <span>工藝細節與業主說明</span>
+                  <textarea id="input-detail" rows="2" placeholder="向業主說明此處的走線設計、承重力或保養方式..."></textarea>
+                </label>
+
+                <label class="field">
+                  <span>報價或升級備註 (選填)</span>
+                  <input id="input-price" type="text" placeholder="例如：標配含安裝 / 加裝感應 LED 燈條 +$1,800" />
+                </label>
+
+                <div class="modal-actions">
+                  <button id="modal-cancel" type="button" class="btn-action">取消</button>
+                  <button type="submit" class="btn-action primary">✓ 釘選至 3D 模型</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- X/Y/Z 三軸無段拖拉 3D 剖面控制面板 -->
+          <div id="slice-panel" class="slice-panel" hidden>
+            <div class="slice-group">
+              <span class="slice-label">剖面方向：</span>
+              <button type="button" class="axis-btn active" data-axis="z">Z 前後剖 (透視抽屜與隔板)</button>
+              <button type="button" class="axis-btn" data-axis="x">X 左右剖 (透視燕尾榫與側板)</button>
+              <button type="button" class="axis-btn" data-axis="y">Y 上下剖 (俯視三區配置與走線孔)</button>
+            </div>
+            <div class="slice-slider-wrap">
+              <span>剖面推進深度</span>
+              <input id="slice-slider" type="range" min="-2.0" max="2.0" step="0.02" value="0.15" />
+              <span id="slice-val" class="mono">0.15</span>
+            </div>
+          </div>
+
+          <!-- 底部懸浮工具列 -->
+          <div class="toolbar" role="toolbar" aria-label="木工 3D 控制項">
+            <button id="btn-author" type="button" class="tool-btn highlight" title="在 3D 模型上點擊直接新增板材或五金標註">
+              <span>➕ 點選模型新增標註</span>
+            </button>
+            <span class="divider"></span>
+            <button id="btn-cross" type="button" class="tool-btn" title="開啟 3D 剖面滑桿，透視電視櫃內部檜木抽屜與 Blum 滑軌">
+              <span>🪚 3D 剖面透視</span>
+            </button>
+            <button id="btn-wireframe" type="button" class="tool-btn" title="檢視 3D 網格結構線">
+              <span>⌗ 結構線框</span>
+            </button>
+            <button id="btn-autorotate" type="button" class="tool-btn" title="自動旋轉展示">
+              <span>↻ 自動旋轉</span>
+            </button>
+            <button id="btn-isolate" type="button" class="tool-btn" title="隱藏展示圓盤底座">
+              <span>◎ 隱藏底座</span>
+            </button>
+            <span class="divider"></span>
+            <button id="btn-zoom-in" type="button" class="tool-btn icon-only" title="放大">＋</button>
+            <button id="btn-zoom-out" type="button" class="tool-btn icon-only" title="縮小">－</button>
+            <button id="btn-reset" type="button" class="tool-btn" title="重置回標準正面視角">
+              <span>⌂ 重置視角</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 右欄：台灣木工台尺/公分/分板換算器 + 7 尺電視櫃報價單摘要 -->
+        <aside class="panel panel-right">
+          <div class="tool-card">
+            <div class="section-header">
+              <span>📏 台灣木工台尺 ↔ 公分換算器</span>
+              <small>1台尺 = 30.303cm</small>
+            </div>
+            <div class="calc-grid">
+              <label class="calc-field">
+                <span>台灣台尺 (尺)</span>
+                <input id="calc-taichi" type="number" step="0.1" value="7.0" />
+              </label>
+              <label class="calc-field">
+                <span>公分 (cm)</span>
+                <input id="calc-cm" type="number" step="0.5" value="212.1" />
+              </label>
+              <label class="calc-field">
+                <span>公釐 (mm)</span>
+                <input id="calc-mm" type="number" step="1" value="2121" />
+              </label>
+              <label class="calc-field">
+                <span>英吋 (inch)</span>
+                <input id="calc-inch" type="number" step="0.1" value="83.5" />
+              </label>
+            </div>
+            <div class="board-quick-ref">
+              <span>常用木工板材俗稱速查 (點擊代入)：</span>
+              <div class="board-chips">
+                <span class="chip" data-mm="2121">7尺櫃 (212cm)</span>
+                <span class="chip" data-mm="18">6分板 (18mm)</span>
+                <span class="chip" data-mm="15">5分板 (15mm)</span>
+                <span class="chip" data-mm="9">3分板 (9mm)</span>
+                <span class="chip" data-mm="3.6">1分2夾板 (3.6mm)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 業主報價與用料規格單預覽 (可一鍵複製傳給客戶 LINE) -->
+          <div class="quote-card">
+            <div class="section-header">
+              <span>📋 7 尺電視櫃 LINE 報價規格單</span>
+              <button id="btn-copy-quote" type="button" class="btn-mini">複製報價單</button>
+            </div>
+            <pre id="quote-preview" class="quote-preview"></pre>
+          </div>
+
+          <div class="guide-card">
+            <strong>💡 業主與師傅互動指南</strong>
+            <ol>
+              <li>上方可切換 <strong>「A 落地格柵款 / B 懸空壁掛款 / C 圓弧直柵款」</strong> 三種 7 尺方案。</li>
+              <li>點擊下方 <strong>「🪚 3D 剖面透視」</strong> 拉動滑桿檢視檜木抽屜與五金。</li>
+              <li>點擊 <strong>「➕ 點選模型新增標註」</strong> 可直接在模型上追加客製化需求並匯出 JSON！</li>
+            </ol>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

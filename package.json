@@ -1,0 +1,22 @@
+{
+  "name": "tv-cabinet-7ft-3d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5175 --open",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.185.3",
+    "typescript": "^5.9.3",
+    "vite": "^6.3.0",
+    "wrangler": "^4.0.0"
+  }
+}
